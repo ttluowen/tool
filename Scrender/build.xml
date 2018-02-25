@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<project name="JavaLibBuilder" basedir=".">
+	<!-- 打包的 jar 包文件及位置。 -->
+	<property name="jarFile" value="versions/screenshot-lib-v1.0.jar" />
+
+	<!-- 各工程的路径。 -->
+	<property name="fav" value="../fav.yiyuen.com/WebRoot/WEB-INF/lib/" />
+
+
+	<!-- 打包 jar 包。 -->
+	<target name="buildJar">
+		<jar destfile="${jarFile}" basedir="${basedir}/bin" />
+	</target >
+
+
+	<!-- 将 jar 包复制到各工程下。 -->
+	<target name="run" depends="buildJar">
+		<!--
+		<copy file="${jarFile}" todir="${fav}"/>
+		-->
+	</target>
+</project>

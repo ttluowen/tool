@@ -1,0 +1,119 @@
+.after-clear {
+  content: "\20";
+  display: block;
+  clear: both;
+  height: 0;
+}
+.mu-text-field {
+  width: auto;
+}
+.appbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.popup-top {
+  color: #fff;
+  width: 50%;
+  height: 48px;
+  line-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 375px;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+.view-body {
+  padding: 20px;
+  margin-top: 56px;
+}
+.config-page .host-item {
+  font-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed #dfdfdf;
+  margin-bottom: 25px;
+}
+.config-page .host-item .index,
+.config-page .host-item .fields,
+.config-page .host-item .edit {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 1.5rem;
+  white-space: normal;
+}
+.config-page .host-item .index,
+.config-page .host-item .edit {
+  width: 15%;
+  overflow: hidden;
+}
+.config-page .host-item .index {
+  text-align: center;
+  color: #009688;
+}
+.config-page .host-item .fields {
+  width: 70%;
+  overflow: hidden;
+}
+.config-page .host-item .edit {
+  text-align: right;
+}
+.config-page .host-add {
+  text-align: right;
+}
+.view-page ul {
+  padding: 0;
+  margin: 0;
+}
+.view-page li {
+  list-style: none;
+}
+.view-page .echarts {
+  display: block;
+  width: 100%;
+  height: 300px;
+  margin-bottom: 25px;
+}
+.view-page .host-item {
+  margin-bottom: 70px;
+}
+.view-page .host-number:after {
+  content: "\20";
+  display: block;
+  clear: both;
+  height: 0;
+}
+.view-page .host-number .number-item {
+  float: left;
+  width: 50%;
+  list-style: none;
+  margin: 0;
+}
+.view-page .host-number .number-item .labelName {
+  margin-right: 10px;
+}
+.view-page .host-number .value {
+  color: #f90;
+}
+.view-page .subNumber-list {
+  margin-left: 20px;
+}
+.view-page .subNumber-item strong {
+  display: block;
+  font-weight: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-right: 15px;
+}
+.view-page .subNumber-item em {
+  display: block;
+  font-style: normal;
+  margin-left: 20px;
+}
+.view-page .subNumber-item i {
+  font-style: normal;
+  margin-left: 5px;
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+		<link rel="stylesheet" href="assets/material-design-icons/material-icons.css" />
+		<link rel="stylesheet" href="assets/material-icons/material-icons.css" />
+		<link rel="stylesheet" href="assets/muse-ui/muse-ui.css" />
+		<link rel="stylesheet" href="assets/muse-ui/theme-teal.css" />
+		<link rel="stylesheet" href="assets/app/css/base.css" />
+
+		<script src="assets/app/js/vue.js"></script>
+		<script src="assets/vue-router/vue-router.min.js"></script>
+		<script src="assets/muse-ui/muse-ui.js"></script>
+		<script src="assets/app/js/dim.js"></script>
+		<script src="assets/app/js/util.min.js"></script>
+		<script src="assets/app/js/webSocket.min.js"></script>
+
+		<script src="assets/app/component/Config.js"></script>
+		<script src="assets/app/component/View.js"></script>
+		<script src="assets/app/component/Home.js"></script>
+		<title>Server Monitor</title>
+	</head>
+
+	<body>
+		<div id="app"></div>
+
+		<script type="text/template" id="Home-template">
+			<div>
+				<mu-appbar class="appbar" title="服务器监控">
+					<mu-icon-menu icon="more_vert" slot="right">
+						<mu-menu-item title="监控点" @click="menuLink(0)" />
+						<mu-menu-item title="预览" @click="menuLink(1)" />
+					</mu-icon-menu>
+				</mu-appbar>
+
+				<div class="view-body">
+					<router-view />
+				</div>
+			</div>
+		</script>
+
+		<script type="text/template" id="Config-template">
+			<div class="config-page">
+				<div class="host-add">
+					<mu-raised-button label="新 增" :disabled="addDisabled" @click="add" icon="add" primary />
+				</div>
+
+				<div class="host-item" v-for="(item, index) in hosts">
+					<div class="index">
+						<mu-icon :value="'filter_' + (index + 1)" />
+					</div>
+					<div class="fields">
+						<mu-text-field hintText="ID" icon="turned_in_not" v-model="item.id" type="number" :maxLength="10" />
+						<mu-text-field hintText="SIGN" icon="web_asset" v-model="item.sign" :maxLength="16" />
+						<mu-text-field hintText="NAME" icon="assignment_ind" v-model="item.name" :maxLength="20" />
+					</div>
+					<div class="edit">
+						<mu-icon value="clear" @click="remove(index)" />
+					</div>
+				</div>
+
+				<div class="host-submit">
+					<mu-raised-button label="提 交" @click="submit" icon="check" primary fullWidth />
+				</div>
+
+				<mu-popup position="bottom" :overlay="false" popupClass="popup-top" :open="openPopup">{{popupText}}</mu-popup>
+
+				<mu-dialog :open="openDialog">
+					{{dialogText}}
+					<mu-flat-button label="确定" slot="actions" primary @click="closeDialog" />
+				</mu-dialog>
+			</div>
+		</script>
+
+		<script type="text/template" id="View-template">
+			<div class="view-page">
+				<div class="host-item" v-for="item in hosts">
+					<h2 class="host-name">{{item.name}}</h2>
+
+					<ul class="host-number">
+						<li class="number-item"><strong class="labelName">CPU</strong><span class="value">{{cpu(item.id) + "%"}}</span></li>
+						<li class="number-item"><strong class="labelName">内存</strong><span class="value">{{(memory(item.id).usedPercent || 0) + "%"}}</span></li>
+						<li class="number-item"><strong class="labelName">磁盘</strong>
+							<ul class="subNumber-list">
+								<li class="subNumber-item" v-for="diskItem in disk(item.id)">
+									<strong>{{diskItem.model}}</strong>
+									<em>读<i class="value">{{util.bytesToSize(diskItem.readSpeed)}}</i></em>
+									<em>写<i class="value">{{util.bytesToSize(diskItem.writeSpeed)}}</i></em>
+								</li>
+							</ul>
+						</li>
+						<li class="number-item"><strong class="labelName">网络</strong>
+							<ul class="subNumber-list">
+								<li class="subNumber-item" v-for="networkItem in network(item.id)">
+									<strong>{{networkItem.name}}</strong>
+									<em>上行<i class="value">{{util.bytesToSize(networkItem.upSpeed)}}</i></em>
+									<em>下行<i class="value">{{util.bytesToSize(networkItem.downSpeed)}}</i></em>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</script>
+
+		<script src="assets/app/js/index.js"></script>
+	</body>
+
+</html>
