@@ -1,0 +1,16 @@
+# 排除不打包的文件或文件目录，会自动跟 {root-yiyuen}、{root-yiyuen-admin} 拼接。
+
+MI\Code\Java\src\main\webapp\.settings
+
+
+MI\Code\Assets\.settings
+MI\Code\Assets\factories\yanshi-liou
+MI\Code\Assets\factories\yanshi-pierboge
+MI\Code\Assets\factories\yanshi-zheda
+
+
+MI\Code\Page\.settings
+MI\Code\Page\factories\yanshi-liou
+MI\Code\Page\factories\yanshi-pierboge
+MI\Code\Page\factories\yanshi-tieliu
+MI\Code\Page\factories\yanshi-zheda
