@@ -1,4 +1,4 @@
-package com.yy.tool.publisher.packer;
+package com.yy.tool.publisher.util;
 
 import java.io.File;
 
