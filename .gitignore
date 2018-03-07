@@ -1,3 +1,6 @@
 /FileSync/target
 /FileSync/logs
 /FileSync/versions/1.0/logs
+/Publisher/versions/1.0/logs
+/Publisher/versions/1.0/out
+/Publisher/logs

@@ -3,9 +3,8 @@ package com.yy.tool.publisher.action;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,12 +44,16 @@ public class Uploader implements ActionInterface {
 		File upgradeVersionFile = Common.getTheVersionUpgradeFile(version);
 
 		// 校验文件是否存在。
-		if (fullVersionFile != null && !fullVersionFile.exists()) {
+		if (fullVersionFile == null || !fullVersionFile.exists()) {
 			Logger.log("v" + version + " 全量包文件不存在");
-			return;
 		}
-		if (upgradeVersionFile != null && !upgradeVersionFile.exists()) {
+		if (upgradeVersionFile == null || !upgradeVersionFile.exists()) {
 			Logger.log("v" + version + " 增量包文件不存在");
+		}
+		
+		if ((fullVersionFile == null || !fullVersionFile.exists())
+				&& (upgradeVersionFile == null || !upgradeVersionFile.exists())) {
+			Logger.log("没有可上传的文件，中止操作");
 			return;
 		}
 
@@ -104,8 +107,12 @@ public class Uploader implements ActionInterface {
 
 			// 开始上传。
 			List<File> uploadFiles = new ArrayList<>();
-			uploadFiles.add(fullVersionFile);
-			uploadFiles.add(upgradeVersionFile);
+			if (upgradeVersionFile != null) {
+				uploadFiles.add(upgradeVersionFile);
+			}
+			if (fullVersionFile != null) {
+				uploadFiles.add(fullVersionFile);
+			}
 
 			int uploadCount = uploadFiles.size();
 			int successCount = 0;
@@ -148,8 +155,6 @@ public class Uploader implements ActionInterface {
 	private boolean upload(FTPClient ftpClient, String path, File localFile) {
 
 		final String filename = localFile.getName();
-		RandomAccessFile raf = null;
-		OutputStream out = null;
 
 
 		Logger.log("上传 " + path + filename);
@@ -170,66 +175,19 @@ public class Uploader implements ActionInterface {
 			// 远程文件大小。
 			long remoteFileSize = remoteFile != null ? remoteFile.getSize() : 0;
 			
-			
+
 			// 设置起始点。
+			InputStream in = new FileInputStream(localFile);
+			in.skip(remoteFileSize);
+			
 			ftpClient.setRestartOffset(remoteFileSize);
 
 
 			// 上传。
-			if (ftpClient.storeFile(filename, new FileInputStream(localFile))) {
-				return true;
-			}
-
-
-//			// 显示进度的上传
-//			long step = localFile.length() / 100;
-//			long process = 0;
-//			long localReadBytes = 0L;
-//			raf = new RandomAccessFile(localFile, "r");
-//			out = ftpClient.appendFileStream(filename);
-//
-//			
-//			// 断点续传。
-//			if (remoteFileSize > 0) {
-//				// 设置起始点。
-//				ftpClient.setRestartOffset(remoteFileSize);
-//				raf.seek(remoteFileSize);
-//				process = remoteFileSize / step;
-//				localReadBytes = remoteFileSize;
-//
-//				Logger.log("远程该文件已存在，大小：" + remoteFileSize + "，将使用续传上传");
-//			}
-//
-//			
-//			// 开始上传。
-//			byte[] byteBuffer = new byte[1024];
-//			int readSize;
-//			while ((readSize = raf.read(byteBuffer)) != -1) {
-//				out.write(byteBuffer, 0, readSize);
-//				localReadBytes += readSize;
-//				if (localReadBytes / step != process) {
-//					process = localReadBytes / step;
-//					Logger.log("上传进度:" + process);
-//				}
-//			}
+			return ftpClient.storeFile(filename, in);
 		} catch (IOException e) {
 			Logger.printStackTrace(e);
 			return false;
-		} finally {
-//			try {
-//				out.flush();
-//				out.close();
-//			} catch (IOException e) {
-//				Logger.printStackTrace(e);
-//			}
-//			try {
-//				raf.close();
-//			} catch (IOException e) {
-//				Logger.printStackTrace(e);
-//			}
 		}
-		
-		
-		return false;
 	}
 }

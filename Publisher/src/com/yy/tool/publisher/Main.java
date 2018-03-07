@@ -65,13 +65,13 @@ public class Main {
 		Common.setYiyuenRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen")));
 		Common.setYiyuenAdminRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen-admin")));
 
-		
+
 		// 打包文件名格式。
 		Common.setFullFilename("YiYuen-v{version}-{date}.zip");
-		Common.setUpgradeFilename("YiYuen-upgrade-v{version}-{date}.zip");
+		Common.setUpgradeFilename("YiYuen-v{version}-upgrade-{date}.zip");
 		// 匹配打包名正则。
 		Common.setFullFilenameReg("YiYuen\\-v(\\d+\\.\\d+\\.\\d+)\\-.*?\\.zip");
-		Common.setUpgradeFilenameReg("YiYuen-upgrade\\-v(\\d+\\.\\d+\\.\\d+)\\-.*?\\.zip");
+		Common.setUpgradeFilenameReg("YiYuen\\-v(\\d+\\.\\d+\\.\\d+)\\-upgrade\\-.*?\\.zip");
 
 
 		// 排除文件类型。
@@ -139,18 +139,19 @@ public class Main {
 		} else if (pack.equals("small")) {
 			nextVersionApi = "queryNextSmallVersion";
 		} else {
-			nextVersionApi = "queryNextPatchVersion";
+			nextVersionApi = "queryNextPatch";
 		}
 		StatuscodeMap versionSm = StatuscodeMap.parse(HttpUtil.get(Common.DOMAIN + "api/base/version/" + nextVersionApi));
 		String nextVersion = versionSm.getResultAsString();
+		nextVersion = "1.0.2";
 		Common.setNextVersion(SystemConfig.parseVersion(nextVersion));
 
 
 		// 升级包升级时的动作。
 		Common.setUpgradeBeforeStop(properties.get("upgrade-beforeStop").equals("1"));
 		Common.setUpgradeAfterRestart(properties.get("upgrade-afterRestart").equals("1"));
-		
-		
+
+
 		// FTP 上传。
 		Common.setFtpHost(StringUtil.unNull(properties.get("ftp-host")));
 		Common.setFtpPort(NumberUtil.parseInt(properties.get("ftp-port")));
@@ -201,14 +202,14 @@ public class Main {
 
 		try {
 			// 打包操作。
-//			if (actions.packable()) {
-//				new Packer().todo();
-//			}
-//			
-//			// 增量包比较操作。
-//			if (actions.compareable()) {
-//				new Comparer().todo();;
-//			}
+			if (actions.packable()) {
+				new Packer().todo();
+			}
+			
+			// 增量包比较操作。
+			if (actions.compareable()) {
+				new Comparer().todo();;
+			}
 			
 			// 上传至中心服务器。
 			if (actions.uploadable()) {

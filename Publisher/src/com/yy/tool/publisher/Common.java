@@ -16,10 +16,10 @@ import com.rt.web.config.SystemConfig;
  * @author Luowen
  */
 public class Common {
-	
+
 	/** 中心服务器域名。 */
-	public static final String DOMAIN = "http://192.168.31.248:86/";
-//	public static final String DOMAIN = "http://www.yiyuen.com/";
+//	public static final String DOMAIN = "http://192.168.31.248:86/";
+	public static final String DOMAIN = "http://www.yiyuen.com/";
 	
 
 	/** 下一发布版本的版本号。 */
