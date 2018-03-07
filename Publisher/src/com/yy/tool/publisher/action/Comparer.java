@@ -17,7 +17,7 @@ import com.rt.util.file.FileUtil;
 import com.rt.util.string.StringUtil;
 import com.rt.util.zip.ZipUtil;
 import com.rt.web.config.SystemConfig;
-import com.yy.tool.publisher.Configs;
+import com.yy.tool.publisher.Common;
 
 /**
  * 与上一版本的增量文件比较。
@@ -34,7 +34,7 @@ public class Comparer implements ActionInterface {
 	/** 配置文件。 */
 	public static final String CONFIG_PROPERTIES_FILENAME = "config.properties";
 	/** 打包输出的配置文件。 */
-	public static final String OUT_CONFIG_PROPERTIES_FILENAME = "outConfig.properties";
+	public static final String UPGRADE_CONFIG_PROPERTIES_FILENAME = "config.properties";
 	/** 待删除的文件的列表文件。 */
 	public static final String DELETE_LIST_FILENAME = "deleteList.txt";
 	
@@ -62,6 +62,12 @@ public class Comparer implements ActionInterface {
 
 	@Override
 	public void todo() {
+
+		Logger.log("开始版本比较");
+		
+		
+		Date startDate = new Date();
+		
 		
 		boolean success =
 		
@@ -87,6 +93,14 @@ public class Comparer implements ActionInterface {
 		if (success) {
 			System.out.println("success");
 		}
+
+
+		Date endDate = new Date();
+		long cost = (endDate.getTime() - startDate.getTime()) / 1000;
+		long minutes = cost / 60;
+		long seconds = cost % 60;
+
+		Logger.log("版本比较完成，共用时" +  + minutes + "分" + seconds + "秒");
 	}
 	
 	
@@ -98,32 +112,48 @@ public class Comparer implements ActionInterface {
 	private boolean initDir() {
 
 		List<String> versions = new ArrayList<>();
-		
-		// 判断升级包文件名的正则，文件名为 YiYuen-v2.3.1-20170114.zip。
-		Pattern pattern = Pattern.compile("YiYuen\\-v(\\d+\\.\\d+\\.\\d+)\\-.*?\\.zip", Pattern.CASE_INSENSITIVE);
-		for (File file : Configs.getOutDir().listFiles()) {
+		nextVersion = Common.getNextVersionStr();
+
+
+		// 获取版本文件列表。
+		Pattern pattern = Pattern.compile(Common.getFullFilenameReg(), Pattern.CASE_INSENSITIVE);
+		for (File file : Common.getOutDir().listFiles()) {
 			String filename = file.getName();
 			Matcher matcher = pattern.matcher(filename);
 			
 			if (matcher.find()) {
-				versions.add(matcher.group(1));
+				String version = matcher.group(1);
+				if (!version.equals(nextVersion)) {
+					versions.add(matcher.group(1));					
+				}
 			}
 		}
+
 		
-		
+		// 如果没有可用的上一版本，中止。
 		if (versions.size() == 0) {
 			return false;
 		}
+
 		
-		
+		// 取最后一个版本。
 		prevVersion = versions.get(versions.size() - 1);
-		nextVersion = Configs.getNextVersionStr();
 
 
-		File tempDir = Configs.getTempDir();
+		File tempDir = Common.getTempDir();
 		prevDir = new File(tempDir, prevVersion);
 		nextDir = new File(tempDir, nextVersion);
 		compareDir = new File(tempDir, "compare");
+		
+		if (!prevDir.exists()) {
+			prevDir.mkdirs();
+		}
+		if (!nextDir.exists()) {
+			nextDir.mkdirs();
+		}
+		if (!compareDir.exists()) {
+			compareDir.mkdirs();
+		}
 		
 		
 		return true;
@@ -138,15 +168,23 @@ public class Comparer implements ActionInterface {
 	private boolean unzip() {
 		
 		try {
-			ZipUtil.uncompress(
-					new File(Configs.getOutDir(), prevVersion).getAbsoluteFile().toString(),
-					prevDir.getAbsoluteFile().toString()
-			);
+			File prevVersionFile = Common.getTheVersionFile(prevVersion);
+			if (prevVersionFile != null) {
+				ZipUtil.uncompress(
+						prevVersionFile.getAbsolutePath(),
+						prevDir.getAbsolutePath()
+				);
+			}
 
-			ZipUtil.uncompress(
-					new File(Configs.getOutDir(), nextVersion).getAbsoluteFile().toString(),
-					nextDir.getAbsoluteFile().toString()
-			);
+			File nextVersionFile = Common.getTheVersionFile(nextVersion);
+			if (nextVersionFile != null) {
+				ZipUtil.uncompress(
+						nextVersionFile.getAbsolutePath(),
+						nextDir.getAbsolutePath()
+				);
+			} else {
+				return false;
+			}
 		} catch (Exception e) {
 			Logger.printStackTrace(e);
 			return false;
@@ -160,28 +198,24 @@ public class Comparer implements ActionInterface {
 	/**
 	 * 比较文件列表。
 	 * 
-	 * @param prevList
-	 * @param nextList
+	 * @param prevFileList
+	 * @param nextFileList
 	 * @param basePath
 	 */
-	private boolean compare(String[] prevList, String[] nextList, String basePath) {
-	
+	private boolean compare(String[] prevFileList, String[] nextFileList, String basePath) {
+
 		// 将下一版本的文件列表转换成 List 对象，便于作排除操作。
 		List<String> nextVersionList = new ArrayList<>();
-		for (String item : nextList) {
+		for (String item : nextFileList) {
 			nextVersionList.add(item);
 		}
-	
-	
-		for (String prevFileName : prevList) {
+
+
+		for (String prevFileName : prevFileList) {
 			String relativeFile = basePath + prevFileName;
-			File prevFile = new File(prevDir.getAbsoluteFile().toString() + relativeFile);
-			File nextFile = new File(nextDir.getAbsoluteFile().toString() + relativeFile);
-	
-	
-			Logger.log("分析[" + prevFile.toString() + "]");
-	
-	
+			File prevFile = new File(prevDir, relativeFile);
+			File nextFile = new File(nextDir, relativeFile);
+
 			/*
 			 * 检测该文件或文件夹在新版本中是否还存在。
 			 * 如果已经不存在，则将该文件或文件夹添加到待删除列表，
@@ -189,6 +223,7 @@ public class Comparer implements ActionInterface {
 			 */
 			if (!nextFile.exists()) {
 				deleteList.add(relativeFile);
+				Logger.log("删除[" + relativeFile + "]");
 	
 				continue;
 			}
@@ -196,11 +231,12 @@ public class Comparer implements ActionInterface {
 	
 			// 将该文件从下一个版本的列表中删除，以表示对该文件已操作过。
 			nextVersionList.remove(prevFileName);
-	
-	
+
+
 			if (prevFile.isFile()) {
 				if (compare(prevFile, nextFile) == DIFFERENT) {
 					differentList.add(relativeFile);
+					Logger.log("更新[" + relativeFile + "]");
 				}
 			} else {
 				compare(prevFile.list(), nextFile.list(), relativeFile + "\\");
@@ -210,7 +246,10 @@ public class Comparer implements ActionInterface {
 	
 		// 将上一个版本中不存在的文件添加到差异列表中。
 		for (String item : nextVersionList) {
-			differentList.add(basePath + item);
+			String newFile = basePath + item;
+			differentList.add(newFile);
+
+			Logger.log("新增[" + newFile + "]");
 		}
 		
 		
@@ -264,13 +303,14 @@ public class Comparer implements ActionInterface {
 
 
 		String comparePath = SystemConfig.formatFilePath(compareDir.getAbsolutePath());
+		String outFilePath = SystemConfig.formatFilePath(new File(compareDir, FILE_DIR_NAME).getAbsolutePath());
 		String nextVersionPath = SystemConfig.formatFilePath(nextDir.getAbsolutePath());
 	
 	
 		// 输出差异文件。
 		for (String file : differentList) {
 			File sourceFile = new File(nextVersionPath + file);
-			File outFile = new File(comparePath + file);
+			File outFile = new File(outFilePath + file);
 	
 			try {
 				if (sourceFile.isFile()) {
@@ -306,15 +346,16 @@ public class Comparer implements ActionInterface {
 		Logger.log("输出配置文件");
 
 
-		try {
-			FileUtil.copy(
-					compareDir.getAbsolutePath() + "\\" + OUT_CONFIG_PROPERTIES_FILENAME,
-					CONFIG_PROPERTIES_FILENAME
-			);
-		} catch (IOException e) {
-			Logger.printStackTrace(e);
-			return false;
-		}
+		String content = ""
+				+ "beforeStop=" + (Common.isUpgradeBeforeStop() ? 1 : 0) + "\n"
+				+ "afterRestart=" + (Common.isUpgradeAfterRestart() ? 1 : 0) + "\n"
+		;
+
+
+		FileUtil.save(
+				new File(compareDir, UPGRADE_CONFIG_PROPERTIES_FILENAME),
+				content.toString()
+		);
 		
 		
 		return true;
@@ -327,18 +368,18 @@ public class Comparer implements ActionInterface {
 	private boolean zip() {
 		
 		Logger.log("打包");
-		
-	
+
+
 		try {
 			Map<String, Object> params = new HashMap<>();
 			params.put("version", nextVersion);
 			params.put("date", new SimpleDateFormat("yyyyMMdd").format(new Date()));
 
-			String filename = StringUtil.substitute(Configs.getUpgradeFilename(), params);
+			String filename = StringUtil.substitute(Common.getUpgradeFilename(), params);
 
 
 			// 打包。
-			ZipUtil.compress(compareDir.getAbsolutePath(), Configs.getOutDir().getAbsolutePath() + "\\" + filename);
+			ZipUtil.compress(compareDir.getAbsolutePath(), Common.getOutDir().getAbsolutePath() + "\\" + filename);
 		} catch (IOException e) {
 			Logger.printStackTrace(e);
 			return false;
@@ -355,8 +396,8 @@ public class Comparer implements ActionInterface {
 	private boolean clean() {
 		
 		Logger.log("清理");
-	
-	
+
+
 		FileUtil.deleteDir(prevDir.getAbsolutePath());
 		FileUtil.deleteDir(nextDir.getAbsolutePath());
 		FileUtil.deleteDir(compareDir.getAbsolutePath());

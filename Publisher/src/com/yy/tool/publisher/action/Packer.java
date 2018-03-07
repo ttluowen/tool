@@ -1,12 +1,18 @@
 package com.yy.tool.publisher.action;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.rt.log.Logger;
-import com.yy.tool.publisher.Configs;
-import com.yy.tool.publisher.util.FileUtil;
-import com.yy.tool.publisher.util.Filter;
+import com.rt.util.file.FileFilter;
+import com.rt.util.file.FileUtil;
+import com.rt.util.string.StringUtil;
+import com.rt.util.zip.ZipUtil;
+import com.yy.tool.publisher.Common;
 
 /**
  * 打包操作。
@@ -17,8 +23,8 @@ import com.yy.tool.publisher.util.Filter;
  */
 public class Packer implements ActionInterface {
 
-	private File tempDir;
-	private Filter filter;
+	private File packDir;
+	private FileFilter filter;
 
 
 	@Override
@@ -28,17 +34,24 @@ public class Packer implements ActionInterface {
 
 
 		Date startDate = new Date();
+
+
+		// 校验打包输出目录。
+		packDir = new File(Common.getTempDir(), "pack");
+		if (!packDir.exists()) {
+			packDir.mkdirs();
+		}
 		
 		
 		// 打包文件过滤器。
-		filter = new Filter() {
+		filter = new FileFilter() {
 			public boolean doFilter(String filename, String ext, File file) {
-				if (Configs.getExcludeExts().indexOf(ext) != -1) {
+				if (Common.getExcludeExts().indexOf(ext) != -1) {
 					return true;
 				}
 
 				String filePath = file.getAbsolutePath();
-				for (File f : Configs.getExcludeFiles()) {
+				for (File f : Common.getExcludeFiles()) {
 					String fPath = f.getAbsolutePath();
 					
 					if (f.isDirectory()) {
@@ -58,26 +71,31 @@ public class Packer implements ActionInterface {
 
 
 		// yiyuen 工程。
-		File yiyuenRoot = new File(Configs.getYiyuenRoot());
-		if (!yiyuenRoot.exists()) {
+		File yiyuenRoot = new File(Common.getYiyuenRoot());
+		if (yiyuenRoot.exists()) {
 			packYiyuen();
 		}
 
 		// yiyuen-admin 工程。
-		File yiyuenAdminRoot = new File(Configs.getYiyuenAdminRoot());
-		if (!yiyuenAdminRoot.exists()) {
+		File yiyuenAdminRoot = new File(Common.getYiyuenAdminRoot());
+		if (yiyuenAdminRoot.exists()) {
 			packYiyuenAdmin();
 		}
+		
+		
+		// 打包。
+		zip();
 
 
 		// 清除临时目录。
-		tempDir.delete();
+		FileUtil.delete(packDir.getAbsoluteFile().toString());
 		
 		
 		Date endDate = new Date();
 		long cost = (endDate.getTime() - startDate.getTime()) / 1000;
 		long minutes = cost / 60;
 		long seconds = cost % 60;
+		
 		Logger.log("打包完成，共用时" +  + minutes + "分" + seconds + "秒");
 	}
 	
@@ -87,7 +105,11 @@ public class Packer implements ActionInterface {
 	 */
 	private void packYiyuen() {
 		
-		FileUtil.copyDirectiory(Configs.getYiyuenRoot(), tempDir.getAbsolutePath(), filter);
+		try {
+			FileUtil.copyDir(Common.getYiyuenRoot(), packDir.getAbsolutePath(), filter);
+		} catch (IOException e) {
+			Logger.printStackTrace(e);
+		}
 	}
 
 
@@ -96,6 +118,36 @@ public class Packer implements ActionInterface {
 	 */
 	private void packYiyuenAdmin() {
 		
-		FileUtil.copyDirectiory(Configs.getYiyuenAdminRoot(), tempDir.getAbsolutePath(), filter);
+		try {
+			FileUtil.copyDir(Common.getYiyuenAdminRoot(), packDir.getAbsolutePath(), filter);
+		} catch (IOException e) {
+			Logger.printStackTrace(e);
+		}
+	}
+	
+	
+	/**
+	 * 打包。
+	 * 
+	 * @throws IOException 
+	 */
+	private void zip() {
+
+		String nextVersion = Common.getNextVersionStr();
+		String dateTag = new SimpleDateFormat("YYYYMMdd").format(new Date());
+		
+		Map<String, Object> params = new HashMap<>();
+		params.put("version", nextVersion);
+		params.put("date", dateTag);
+		
+		String fullFilename = StringUtil.substitute(Common.getFullFilename(), params);
+		File outFilename = new File(Common.getOutDir(), fullFilename);
+		
+		
+		try {
+			ZipUtil.compress(packDir.getAbsolutePath(), outFilename.getAbsolutePath());
+		} catch (IOException e) {
+			Logger.printStackTrace(e);
+		}
 	}
 }

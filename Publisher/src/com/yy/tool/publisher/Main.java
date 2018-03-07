@@ -8,7 +8,9 @@ import java.util.Properties;
 
 import com.rt.log.Logger;
 import com.rt.statuscode.StatuscodeMap;
+import com.rt.util.file.FileUtil;
 import com.rt.util.http.HttpUtil;
+import com.rt.util.number.NumberUtil;
 import com.rt.util.proterty.PropertyUtil;
 import com.rt.util.string.StringUtil;
 import com.rt.web.config.SystemConfig;
@@ -16,7 +18,6 @@ import com.yy.tool.publisher.action.Comparer;
 import com.yy.tool.publisher.action.Packer;
 import com.yy.tool.publisher.action.Publisher;
 import com.yy.tool.publisher.action.Uploader;
-import com.yy.tool.publisher.util.FileUtil;
 
 
 /**
@@ -50,6 +51,10 @@ public class Main {
 		// 设置日志目录。
 		Logger.setSystemPath(path);
 		Logger.log("System path：" + path);
+		
+		
+		// 设置当前相关根目录。
+		Common.setRoot(path);
 
 
 		// 读取配置文件内容。
@@ -57,22 +62,27 @@ public class Main {
 		
 		
 		// 工程目录。
-		Configs.setYiyuenRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen")));
-		Configs.setYiyuenRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen-admin")));
+		Common.setYiyuenRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen")));
+		Common.setYiyuenAdminRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen-admin")));
 
+		
 		// 打包文件名格式。
-		Configs.setYiyuenRoot("YiYuen-v{version}-{date}.rar");
-		Configs.setYiyuenRoot("YiYuen-upgrade-v{version}-{date}.rar");
+		Common.setFullFilename("YiYuen-v{version}-{date}.zip");
+		Common.setUpgradeFilename("YiYuen-upgrade-v{version}-{date}.zip");
+		// 匹配打包名正则。
+		Common.setFullFilenameReg("YiYuen\\-v(\\d+\\.\\d+\\.\\d+)\\-.*?\\.zip");
+		Common.setUpgradeFilenameReg("YiYuen-upgrade\\-v(\\d+\\.\\d+\\.\\d+)\\-.*?\\.zip");
+
 
 		// 排除文件类型。
 		List<String> packExcludeExts = new ArrayList<>();
-		for (String ext : StringUtil.unNull(properties.getProperty("pack-excludeExts")).split(",")) {
+		for (String ext : StringUtil.unNull(properties.getProperty("excludeExts")).split(",")) {
 			ext = ext.trim().toLowerCase();
 			if (!ext.isEmpty()) {
 				packExcludeExts.add(ext);
 			}
 		}
-		Configs.setExcludeExts(packExcludeExts);
+		Common.setExcludeExts(packExcludeExts);
 		
 		
 		// 设置执行动作。
@@ -89,18 +99,18 @@ public class Main {
 				actions.setPublish(true);
 			}
 		}
-		Configs.setActions(actions);
+		Common.setActions(actions);
 
 
 		// 打包方式。
 		String pack = StringUtil.unNull(properties.getProperty("pack")).toLowerCase();
-		Configs.setPack(pack);
+		Common.setPack(pack);
 		
 
 		// 读取要排除不打包的文件或文件夹。
 		List<File> excludeFiles = new ArrayList<>();
 		String[] projects = {"yiyuen", "yiyuen-admin"};
-		String[] roots = {Configs.getYiyuenRoot(), Configs.getYiyuenAdminRoot()};
+		String[] roots = {Common.getYiyuenRoot(), Common.getYiyuenAdminRoot()};
 		
 		for (int i = 0, l = projects.length; i < l; i++) {
 			String project = projects[i];
@@ -119,7 +129,7 @@ public class Main {
 				}
 			}
 		}
-		Configs.setExcludeFiles(excludeFiles);
+		Common.setExcludeFiles(excludeFiles);
 
 
 		// 获取下一个对应的版本号。
@@ -131,18 +141,33 @@ public class Main {
 		} else {
 			nextVersionApi = "queryNextPatchVersion";
 		}
-		StatuscodeMap versionSm = StatuscodeMap.parse(HttpUtil.get(Configs.DOMAIN + "api/version/" + nextVersionApi));
+		StatuscodeMap versionSm = StatuscodeMap.parse(HttpUtil.get(Common.DOMAIN + "api/base/version/" + nextVersionApi));
 		String nextVersion = versionSm.getResultAsString();
-		Configs.setNextVersion(SystemConfig.parseVersion(nextVersion));
+		Common.setNextVersion(SystemConfig.parseVersion(nextVersion));
 
 
-		Logger.log("root-yiyuen：" + Configs.getYiyuenRoot());
-		Logger.log("root-yiyuen-admin：" + Configs.getYiyuenAdminRoot());
-		Logger.log("filename-full：", Configs.getFullFilename());
-		Logger.log("filename-upgrade：", Configs.getUpgradeFilename());
-		Logger.log("excludeExts：" + Configs.getExcludeExts());
-		Logger.log("excludeFiles：" + Configs.getExcludeExts());
-		Logger.log("actions：" + Configs.getActions());
+		// 升级包升级时的动作。
+		Common.setUpgradeBeforeStop(properties.get("upgrade-beforeStop").equals("1"));
+		Common.setUpgradeAfterRestart(properties.get("upgrade-afterRestart").equals("1"));
+		
+		
+		// FTP 上传。
+		Common.setFtpHost(StringUtil.unNull(properties.get("ftp-host")));
+		Common.setFtpPort(NumberUtil.parseInt(properties.get("ftp-port")));
+		Common.setFtpUsername(StringUtil.unNull(properties.get("ftp-username")));
+		Common.setFtpPassword(StringUtil.unNull(properties.get("ftp-password")));
+		Common.setFtpPath(StringUtil.unNull(properties.get("ftp-path")));
+
+
+		Logger.log("next version：" + Common.getNextVersionStr());
+		Logger.log("root-yiyuen：" + Common.getYiyuenRoot());
+		Logger.log("root-yiyuen-admin：" + Common.getYiyuenAdminRoot());
+		Logger.log("filename-full：" + Common.getFullFilename());
+		Logger.log("filename-upgrade：" + Common.getUpgradeFilename());
+		Logger.log("excludeExts：" + Common.getExcludeExts());
+		Logger.log("excludeFiles：" + Common.getExcludeFiles());
+		Logger.log("actions：" + Common.getActions());
+		Logger.log("ftp host：" + Common.getFtpHost());
 	}
 
 
@@ -161,38 +186,38 @@ public class Main {
 
 
 		// 创建相关目录。
-		File outDir = Configs.getOutDir();
+		File outDir = Common.getOutDir();
 		if (!outDir.exists()) {
 			outDir.mkdirs();
 		}
-		File tempDir = Configs.getTempDir();
+		File tempDir = Common.getTempDir();
 		if (!tempDir.exists()) {
 			tempDir.mkdirs();
 		}
 
 
-		Actions actions = Configs.getActions();
+		Actions actions = Common.getActions();
 
 
 		try {
 			// 打包操作。
-			if (actions.packable()) {
-				new Packer().todo();
-			}
-			
-			// 增量包比较操作。
-			if (actions.compareable()) {
-				new Comparer().todo();;
-			}
+//			if (actions.packable()) {
+//				new Packer().todo();
+//			}
+//			
+//			// 增量包比较操作。
+//			if (actions.compareable()) {
+//				new Comparer().todo();;
+//			}
 			
 			// 上传至中心服务器。
 			if (actions.uploadable()) {
-				new Uploader();
+				new Uploader().todo();;
 			}
 	
 			// 使中心服务器发布版本当前版本。
 			if (actions.publishable()) {
-				new Publisher();
+				new Publisher().todo();;
 			}
 		} catch (Exception e) {
 			Logger.printStackTrace(e);

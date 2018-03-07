@@ -49,4 +49,10 @@ public class Actions {
 	public void setPublish(boolean publish) {
 		this.publish = publish;
 	}
+	
+	
+	public String toString() {
+		
+		return "pack[" + packable() + "], compare[" + compareable() + "], upload[" + uploadable() + "], publish[" + publishable() + "]";
+	}
 }

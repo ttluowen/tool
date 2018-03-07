@@ -4,7 +4,7 @@ import com.rt.log.Logger;
 import com.rt.statuscode.Statuscode;
 import com.rt.statuscode.StatuscodeMap;
 import com.rt.util.http.HttpUtil;
-import com.yy.tool.publisher.Configs;
+import com.yy.tool.publisher.Common;
 
 /**
  * 通知中心服务器发布当前版本。
@@ -19,9 +19,11 @@ public class Publisher implements ActionInterface{
 	public void todo() {
 		
 		try {
-			StatuscodeMap sm = StatuscodeMap.parse(HttpUtil.get(Configs.DOMAIN + "api/version/notification"));
+			StatuscodeMap sm = StatuscodeMap.parse(HttpUtil.get(Common.DOMAIN + "api/base/version/notification"));
 
-			if (sm.getCode() != Statuscode.SUCCESS) {
+			if (sm.getCode() == Statuscode.SUCCESS) {
+				Logger.log("通知服务器发布版本成功");
+			} else {
 				System.out.println("通知服务器发布版本失败，" + sm.getDescription());
 			}
 		} catch (Exception e) {
