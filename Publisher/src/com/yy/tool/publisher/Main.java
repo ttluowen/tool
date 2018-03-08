@@ -25,7 +25,7 @@ import com.yy.tool.publisher.action.Uploader;
  * 同时再跟上一个版本比较生成一个增长升级包。；
  * 然后再将包上传到中心服务器，并更新最新版本号；
  * 上传成功后，中心服务器会通知各终端服务器自动下载升级；
- * 后面升级的事情将由 Upgrade 程序来负责。
+ * 后面升级的事情将由 Upgrader 程序来负责。
  * 
  * @since 2018-03-06
  * @version 1.0
@@ -186,19 +186,7 @@ public class Main {
 		Logger.log("发布任务开始执行");
 
 
-		// 创建相关目录。
-		File outDir = Common.getOutDir();
-		if (!outDir.exists()) {
-			outDir.mkdirs();
-		}
-		File tempDir = Common.getTempDir();
-		if (!tempDir.exists()) {
-			tempDir.mkdirs();
-		}
-
-
 		Actions actions = Common.getActions();
-
 
 		try {
 			// 打包操作。
@@ -224,7 +212,7 @@ public class Main {
 			Logger.printStackTrace(e);
 		} finally {
 			// 清除临时目录。
-			FileUtil.delete(tempDir.getAbsolutePath());
+			FileUtil.delete(Common.getTempDir());
 		}
 
 

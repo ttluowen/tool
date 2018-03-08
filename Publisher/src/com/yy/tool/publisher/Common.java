@@ -300,4 +300,45 @@ public class Common {
 		
 		return null;
 	}
+	
+	
+	/**
+	 * 解析指定文件的版本号。
+	 * 
+	 * @param filename
+	 * @return
+	 */
+	public static int parseFileVersion(String filename) {
+		
+		String[] regs = {
+				Common.getUpgradeFilenameReg(),
+				Common.getFullFilenameReg()
+		};
+		
+		for (String reg : regs) {
+			Matcher matcher = Pattern.compile(reg, Pattern.CASE_INSENSITIVE).matcher(filename);
+			if (matcher.find()) {
+				String versionStr = matcher.group(1);
+				int version = SystemConfig.parseVersion(versionStr);
+				if (version > 0) {
+					return version;
+				}
+			}
+		}
+		
+
+		return 0;
+	}
+	
+	
+	/**
+	 * 检测当前版本是否是升级包。
+	 * 
+	 * @param filename
+	 * @return
+	 */
+	public static boolean isUpgradeFile(String filename) {
+		
+		return filename.toLowerCase().indexOf("upgrade") != -1;
+	}
 }
