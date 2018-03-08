@@ -59,11 +59,11 @@ public class Main {
 
 		// 读取配置文件内容。
 		Properties properties = PropertyUtil.read(path + "\\config.properties");
-		
-		
+
+
 		// 工程目录。
-		Common.setYiyuenRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen")));
-		Common.setYiyuenAdminRoot(SystemConfig.formatFilePath(properties.getProperty("root-yiyuen-admin")));
+		Common.setYiyuenRoot(new File(properties.getProperty("root-yiyuen")));
+		Common.setYiyuenAdminRoot(new File(properties.getProperty("root-yiyuen-admin")));
 
 
 		// 打包文件名格式。
@@ -110,11 +110,11 @@ public class Main {
 		// 读取要排除不打包的文件或文件夹。
 		List<File> excludeFiles = new ArrayList<>();
 		String[] projects = {"yiyuen", "yiyuen-admin"};
-		String[] roots = {Common.getYiyuenRoot(), Common.getYiyuenAdminRoot()};
+		File[] roots = {Common.getYiyuenRoot(), Common.getYiyuenAdminRoot()};
 		
 		for (int i = 0, l = projects.length; i < l; i++) {
 			String project = projects[i];
-			String root = roots[i];
+			File root = roots[i];
 			File excludeFilesFile = new File(path + "\\excludeFiles-" + project + ".txt");
 
 			if (excludeFilesFile.exists()) {
@@ -124,7 +124,7 @@ public class Main {
 
 					// 过滤空行和注释行。
 					if (!line.isEmpty() && line.indexOf("#") == -1) {
-						excludeFiles.add(new File(root + line));
+						excludeFiles.add(new File(root, line));
 					}
 				}
 			}

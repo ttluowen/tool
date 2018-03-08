@@ -71,13 +71,13 @@ public class Packer implements ActionInterface {
 
 
 		// yiyuen 工程。
-		File yiyuenRoot = new File(Common.getYiyuenRoot());
+		File yiyuenRoot = Common.getYiyuenRoot();
 		if (yiyuenRoot.exists()) {
 			packYiyuen();
 		}
 
 		// yiyuen-admin 工程。
-		File yiyuenAdminRoot = new File(Common.getYiyuenAdminRoot());
+		File yiyuenAdminRoot = Common.getYiyuenAdminRoot();
 		if (yiyuenAdminRoot.exists()) {
 			packYiyuenAdmin();
 		}
@@ -106,7 +106,7 @@ public class Packer implements ActionInterface {
 	private void packYiyuen() {
 		
 		try {
-			FileUtil.copyDir(Common.getYiyuenRoot(), packDir.getAbsolutePath(), filter);
+			FileUtil.copyDir(Common.getYiyuenRoot(), packDir, filter);
 		} catch (IOException e) {
 			Logger.printStackTrace(e);
 		}
@@ -117,9 +117,9 @@ public class Packer implements ActionInterface {
 	 * 打包 yiyuen-admin 工程。
 	 */
 	private void packYiyuenAdmin() {
-		
+
 		try {
-			FileUtil.copyDir(Common.getYiyuenAdminRoot(), packDir.getAbsolutePath(), filter);
+			FileUtil.copyDir(Common.getYiyuenAdminRoot(), new File(packDir, "admin"), filter);
 		} catch (IOException e) {
 			Logger.printStackTrace(e);
 		}
@@ -145,7 +145,7 @@ public class Packer implements ActionInterface {
 		
 		
 		try {
-			ZipUtil.compress(packDir.getAbsolutePath(), outFilename.getAbsolutePath());
+			ZipUtil.compress(packDir, outFilename);
 		} catch (IOException e) {
 			Logger.printStackTrace(e);
 		}

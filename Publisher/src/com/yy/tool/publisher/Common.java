@@ -33,9 +33,9 @@ public class Common {
 	
 
 	/** yiyuen 工程根目录。*/
-	private static String yiyuenRoot;
+	private static File yiyuenRoot;
 	/** yiyuen-admin 工程根目录。 */
-	private static String yiyuenAdminRoot;
+	private static File yiyuenAdminRoot;
 	
 	/** 全量包文件名格式。 */
 	private static String fullFilename;
@@ -113,19 +113,19 @@ public class Common {
 		return tempDir;
 	}
 
-	public static String getYiyuenRoot() {
+	public static File getYiyuenRoot() {
 		return yiyuenRoot;
 	}
 
-	public static void setYiyuenRoot(String yiyuenRoot) {
+	public static void setYiyuenRoot(File yiyuenRoot) {
 		Common.yiyuenRoot = yiyuenRoot;
 	}
 
-	public static String getYiyuenAdminRoot() {
+	public static File getYiyuenAdminRoot() {
 		return yiyuenAdminRoot;
 	}
 
-	public static void setYiyuenAdminRoot(String yiyuenAdminRoot) {
+	public static void setYiyuenAdminRoot(File yiyuenAdminRoot) {
 		Common.yiyuenAdminRoot = yiyuenAdminRoot;
 	}
 
