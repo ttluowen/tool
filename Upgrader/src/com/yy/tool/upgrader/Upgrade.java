@@ -3,14 +3,20 @@ package com.yy.tool.upgrader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
 import com.rt.log.Logger;
+import com.rt.statuscode.Statuscode;
+import com.rt.statuscode.StatuscodeMap;
 import com.rt.util.date.DateUtil;
 import com.rt.util.file.FileUtil;
+import com.rt.util.http.HttpUtil;
+import com.rt.util.string.StringUtil;
 import com.rt.util.zip.ZipUtil;
 import com.rt.web.config.SystemConfig;
 
@@ -105,7 +111,7 @@ public class Upgrade {
 			// 备份。
 			&& step2Backup()
 
-			// 停止 Tomcat 服务（根据配置响应是否要停止）。
+			// 更新前停止。
 			&& step3BeforeStopTomcat()
 
 			// 删除不再需要的文件。
@@ -117,8 +123,8 @@ public class Upgrade {
 		} catch (Exception e) {
 			Logger.printStackTrace(e);
 		} finally {
-			// 启动 Tomcat 服务（根据配置判断先前是否停止过的，配置不需要重启的则不执行启动）。
-//			step7StartTomcat();
+			// 更新完后重启。
+			step6StartTomcat();
 		}
 
 
@@ -126,6 +132,8 @@ public class Upgrade {
 			if (result) {
 				// 更新成功，更新当前版本号配置。
 				updateProperties();
+				// 向中心服务器更新当前版本号。
+				updateSiteVersion();
 			} else {
 				// 更新不成功，回滚版本。
 				rollback();
@@ -149,7 +157,7 @@ public class Upgrade {
 	 * 
 	 * @return
 	 */
-	protected boolean step1Unzip() {
+	private boolean step1Unzip() {
 		
 		Logger.log("解压");
 
@@ -193,7 +201,7 @@ public class Upgrade {
 	 * 
 	 * @return
 	 */
-	protected boolean step2Backup() {
+	private boolean step2Backup() {
 
 		Logger.log("备份");
 
@@ -293,7 +301,7 @@ public class Upgrade {
 	 * 
 	 * @return
 	 */
-	protected boolean step3BeforeStopTomcat() {
+	private boolean step3BeforeStopTomcat() {
 
 		if (beforeTop) {
 			Logger.log("停止 Tomcat 服务");
@@ -311,7 +319,7 @@ public class Upgrade {
 	 * 
 	 * @return
 	 */
-	protected boolean step4Delete() {
+	private boolean step4Delete() {
 		
 		Logger.log("删除不需要的文件");
 
@@ -338,7 +346,7 @@ public class Upgrade {
 	 * 
 	 * @return
 	 */
-	protected boolean step5Copy() {
+	private boolean step5Copy() {
 		
 		Logger.log("更新/覆盖文件");
 
@@ -371,7 +379,7 @@ public class Upgrade {
 	 * 
 	 * @return
 	 */
-	protected boolean step6StartTomcat() {
+	private boolean step6StartTomcat() {
 
 		if (afterRestart) {
 			Logger.log("重新启动 Tomcat 服务");
@@ -387,7 +395,7 @@ public class Upgrade {
 	/**
 	 * 升级完成后（不论成功还是失败）缓存等的清理。
 	 */
-	protected void stepLastClean() {
+	private void stepLastClean() {
 		
 		Logger.log("清理更新");
 
@@ -399,7 +407,7 @@ public class Upgrade {
 	/**
 	 * 升级回滚。
 	 */
-	protected void rollback() {
+	private void rollback() {
 		
 		Logger.log("更新回滚");
 	}
@@ -412,7 +420,7 @@ public class Upgrade {
 	 * @return
 	 * @throws ConfigurationException 
 	 */
-	protected boolean updateProperties() throws ConfigurationException {
+	private boolean updateProperties() throws ConfigurationException {
 
 		String updatetime = DateUtil.get(1);
 
@@ -433,7 +441,7 @@ public class Upgrade {
 
 
 		// 更新工程配置文件信息。
-		File projectConfigFile = new File(Common.getRoot(), "WEB-INF/config.properties");
+		File projectConfigFile = new File(Common.getRoot(), "WEB-INF/configs.properties");
 		if (projectConfigFile.exists()) {
 			PropertiesConfiguration projectConfig = new PropertiesConfiguration(projectConfigFile);
 			projectConfig.setProperty("version", version);
@@ -448,5 +456,34 @@ public class Upgrade {
 		
 		
 		return true;
+	}
+	
+	
+	/**
+	 * 向中心服务器更新自己当前的版本号。
+	 * 
+	 * @return
+	 * @throws IOException 
+	 */
+	private boolean updateSiteVersion() throws IOException {
+		
+		Map<String, Object> params = new HashMap<>();
+		params.put("siteId", Common.getSiteId());
+		params.put("version", SystemConfig.parseVersion(version));
+		
+		String url = Common.DOMAIN + "api/base/version/updateSiteVersion?siteId={siteId}&version={version}";
+		url = StringUtil.substitute(url, params);
+		
+		
+		StatuscodeMap sm = StatuscodeMap.parse(HttpUtil.get(url));
+		if (sm.getCode() == Statuscode.SUCCESS) {
+			Logger.log("向中心服务器更新当前版本成功");
+			
+			return true;
+		} else {
+			Logger.log("向中心服务器更新当前版本失败，" + sm.getDescription());
+			
+			return false;
+		}
 	}
 }

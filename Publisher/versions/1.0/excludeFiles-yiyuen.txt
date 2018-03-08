@@ -1,4 +1,5 @@
-# 排除不打包的文件或文件目录，会自动跟 {root-yiyuen}、{root-yiyuen-admin} 拼接。
+﻿# 排除不打包的文件或文件目录，会自动跟 {root-yiyuen}、{root-yiyuen-admin} 拼接。
 
 .settings
 logs
+WEB-INF/configs.properties

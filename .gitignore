@@ -7,3 +7,5 @@
 /Upgrader/target
 /Upgrader/logs
 /Upgrader/download
+/Upgrader/versions/1.0/download
+/Upgrader/versions/1.0/logs

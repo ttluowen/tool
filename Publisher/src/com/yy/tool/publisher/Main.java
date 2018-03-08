@@ -143,7 +143,6 @@ public class Main {
 		}
 		StatuscodeMap versionSm = StatuscodeMap.parse(HttpUtil.get(Common.DOMAIN + "api/base/version/" + nextVersionApi));
 		String nextVersion = versionSm.getResultAsString();
-		nextVersion = "1.0.2";
 		Common.setNextVersion(SystemConfig.parseVersion(nextVersion));
 
 
