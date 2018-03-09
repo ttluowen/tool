@@ -12,6 +12,7 @@ import com.rt.util.file.FileFilter;
 import com.rt.util.file.FileUtil;
 import com.rt.util.string.StringUtil;
 import com.rt.util.zip.ZipUtil;
+import com.rt.web.config.SystemConfig;
 import com.yy.tool.publisher.Common;
 
 /**
@@ -50,16 +51,30 @@ public class Packer implements ActionInterface {
 					return true;
 				}
 
-				String filePath = file.getAbsolutePath();
+				
+				// 格式转换。
+				String filePath = file.getAbsoluteFile().toString();
+				if (file.isFile()) {
+					filePath = SystemConfig.formatFileRelativePath(filePath);
+				} else {
+					filePath = SystemConfig.formatDirRelativePath(filePath);
+				}
+				
+				
+				// 过滤清单判断。
 				for (File f : Common.getExcludeFiles()) {
-					String fPath = f.getAbsolutePath();
+					String itemFilePath = f.getAbsoluteFile().toString();
 					
-					if (f.isDirectory()) {
-						if (filePath.startsWith(fPath)) {
+					if (f.isFile()) {
+						itemFilePath = SystemConfig.formatFileRelativePath(itemFilePath);
+						
+						if (filePath.equals(itemFilePath)) {
 							return true;
 						}
 					} else {
-						if (filePath.equals(fPath)) {
+						itemFilePath = SystemConfig.formatDirRelativePath(itemFilePath);
+						
+						if (filePath.startsWith(itemFilePath)) {
 							return true;
 						}
 					}

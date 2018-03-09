@@ -110,9 +110,9 @@ public class Uploader implements ActionInterface {
 			if (upgradeVersionFile != null) {
 				uploadFiles.add(upgradeVersionFile);
 			}
-			if (fullVersionFile != null) {
-				uploadFiles.add(fullVersionFile);
-			}
+//			if (fullVersionFile != null) {
+//				uploadFiles.add(fullVersionFile);
+//			}
 
 			int uploadCount = uploadFiles.size();
 			int successCount = 0;

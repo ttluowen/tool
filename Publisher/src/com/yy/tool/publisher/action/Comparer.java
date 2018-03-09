@@ -118,6 +118,10 @@ public class Comparer implements ActionInterface {
 		// 获取版本文件列表。
 		Pattern pattern = Pattern.compile(Common.getFullFilenameReg(), Pattern.CASE_INSENSITIVE);
 		for (File file : Common.getOutDir().listFiles()) {
+			if (file.isDirectory()) {
+				continue;
+			}
+
 			String filename = file.getName();
 			Matcher matcher = pattern.matcher(filename);
 			
@@ -305,9 +309,9 @@ public class Comparer implements ActionInterface {
 		Logger.log("输出差异文件");
 
 
-		String comparePath = SystemConfig.formatFilePath(compareDir.getAbsolutePath());
-		String outFilePath = SystemConfig.formatFilePath(new File(compareDir, FILE_DIR_NAME).getAbsolutePath());
-		String nextVersionPath = SystemConfig.formatFilePath(nextDir.getAbsolutePath());
+		String comparePath = SystemConfig.formatDirRelativePath(compareDir.getAbsolutePath());
+		String outFilePath = SystemConfig.formatDirRelativePath(new File(compareDir, FILE_DIR_NAME).getAbsolutePath());
+		String nextVersionPath = SystemConfig.formatDirRelativePath(nextDir.getAbsolutePath());
 	
 	
 		// 输出差异文件。
