@@ -140,6 +140,9 @@ public class Comparer implements ActionInterface {
 		// 取最后一个版本。
 		prevVersion = versions.get(versions.size() - 1);
 		
+		prevVersion = "1.0.6";
+		nextVersion = "1.0.11";
+		
 		
 		Logger.log("比较的上一版本是 v" + prevVersion);
 
@@ -259,6 +262,14 @@ public class Comparer implements ActionInterface {
 		// 将上一个版本中不存在的文件添加到差异列表中。
 		for (String item : nextVersionList) {
 			String newFile = basePath + item;
+
+			// 过滤校验。
+			if (filter(newFile)) {
+				Logger.log("跳过[" + newFile + "]");
+				continue;
+			}
+
+
 			differentList.add(newFile);
 
 			Logger.log("新增[" + newFile + "]");
