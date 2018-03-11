@@ -151,6 +151,10 @@ public class TomcatServer {
 		try {
 			// 获取系统进程列表。
 			long[] pids = sigar.getProcList();
+			
+			// JRE 环境。
+			String jreHome = System.getProperty("java.home");
+
 
 			for (long pid : pids) {
 				try {
@@ -163,6 +167,9 @@ public class TomcatServer {
 
 					// 当前进程运行时的 Java 环境变量位置。C:\Program Files\Java\jre1.8.0_45
 					String envHome = sigar.getProcEnv(pid, "JAVA_HOME");
+					if (StringUtil.isEmpty(envHome)) {
+						envHome = jreHome;
+					}
 
 
 					/*

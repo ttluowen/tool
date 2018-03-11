@@ -47,7 +47,8 @@ public class Packer implements ActionInterface {
 		// 打包文件过滤器。
 		filter = new FileFilter() {
 			public boolean doFilter(String filename, String ext, File file) {
-				if (Common.getExcludeExts().indexOf(ext) != -1) {
+				if (Common.getExcludedExts().indexOf(ext) != -1) {
+					Logger.log("跳过文件类型[" + ext + "]");
 					return true;
 				}
 
@@ -59,22 +60,24 @@ public class Packer implements ActionInterface {
 				} else {
 					filePath = SystemConfig.formatDirRelativePath(filePath);
 				}
-				
-				
+
+
 				// 过滤清单判断。
-				for (File f : Common.getExcludeFiles()) {
+				for (File f : Common.getExcludedPackFiles()) {
 					String itemFilePath = f.getAbsoluteFile().toString();
 					
 					if (f.isFile()) {
 						itemFilePath = SystemConfig.formatFileRelativePath(itemFilePath);
 						
 						if (filePath.equals(itemFilePath)) {
+							Logger.log("跳过文件[" + itemFilePath + "]");
 							return true;
 						}
 					} else {
 						itemFilePath = SystemConfig.formatDirRelativePath(itemFilePath);
 						
 						if (filePath.startsWith(itemFilePath)) {
+							Logger.log("跳过文件夹[" + itemFilePath + "]");
 							return true;
 						}
 					}

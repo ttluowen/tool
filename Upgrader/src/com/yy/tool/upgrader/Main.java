@@ -21,6 +21,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import com.rt.log.Logger;
 import com.rt.statuscode.Statuscode;
 import com.rt.statuscode.StatuscodeMap;
+import com.rt.util.file.FileUtil;
 import com.rt.util.http.HttpUtil;
 import com.rt.util.number.NumberUtil;
 import com.rt.util.proterty.PropertyUtil;
@@ -165,6 +166,14 @@ public class Main {
 		if (!upgrade(files)) {
 			return;
 		}
+		
+		
+		// 清理升级包。
+		if (!clean()) {
+			return;
+		}
+
+		
 		Logger.log("升级成功，当前版本 v" + Common.getCurrentVersion());
 	}
 	
@@ -370,12 +379,26 @@ public class Main {
 
 			if (!new Upgrade(file, version).run()) {
 				Logger.log(version + "升级不成功，中止升级");
-				break;
+				
+				return false;
 			}
 		}
 		
 		
-		return false;
+		return true;
+	}
+	
+	
+	/**
+	 * 清除下载的升级包。
+	 * 
+	 * @return
+	 */
+	private boolean clean() {
+		
+		FileUtil.deleteDir(Common.getDownloadDir());
+		
+		return true;
 	}
 
 

@@ -16,7 +16,6 @@ import com.rt.log.Logger;
 import com.rt.util.file.FileUtil;
 import com.rt.util.string.StringUtil;
 import com.rt.util.zip.ZipUtil;
-import com.rt.web.config.SystemConfig;
 import com.yy.tool.publisher.Common;
 
 /**
@@ -31,8 +30,6 @@ public class Comparer implements ActionInterface {
 	/** 差异文件夹名称。 */
 	public static final String FILE_DIR_NAME = "file";
 
-	/** 配置文件。 */
-	public static final String CONFIG_PROPERTIES_FILENAME = "config.properties";
 	/** 打包输出的配置文件。 */
 	public static final String UPGRADE_CONFIG_PROPERTIES_FILENAME = "config.properties";
 	/** 待删除的文件的列表文件。 */
@@ -223,6 +220,18 @@ public class Comparer implements ActionInterface {
 			File prevFile = new File(prevDir, relativeFile);
 			File nextFile = new File(nextDir, relativeFile);
 
+
+			// 将该文件从下一个版本的列表中删除，以表示对该文件已操作过。
+			nextVersionList.remove(prevFileName);
+
+
+			// 过滤校验。
+			if (filter(relativeFile)) {
+				Logger.log("跳过[" + relativeFile + "]");
+				continue;
+			}
+
+
 			/*
 			 * 检测该文件或文件夹在新版本中是否还存在。
 			 * 如果已经不存在，则将该文件或文件夹添加到待删除列表，
@@ -234,10 +243,6 @@ public class Comparer implements ActionInterface {
 	
 				continue;
 			}
-	
-	
-			// 将该文件从下一个版本的列表中删除，以表示对该文件已操作过。
-			nextVersionList.remove(prevFileName);
 
 
 			if (prevFile.isFile()) {
@@ -246,11 +251,11 @@ public class Comparer implements ActionInterface {
 					Logger.log("更新[" + relativeFile + "]");
 				}
 			} else {
-				compare(prevFile.list(), nextFile.list(), relativeFile + "\\");
+				compare(prevFile.list(), nextFile.list(), relativeFile + "/");
 			}
 		}
-	
-	
+
+
 		// 将上一个版本中不存在的文件添加到差异列表中。
 		for (String item : nextVersionList) {
 			String newFile = basePath + item;
@@ -286,6 +291,25 @@ public class Comparer implements ActionInterface {
 			return DIFFERENT;
 		}
 	}
+	
+	
+	/**
+	 * 过滤判断。
+	 * 
+	 * @param relativeFile
+	 * @return
+	 */
+	private boolean filter(String relativeFile) {
+
+		for (String file : Common.getExcludedCompareFiles()) {
+			if (relativeFile.startsWith(file)) {
+				return true;
+			}
+		}
+
+
+		return false;
+	}
 
 
 	/**
@@ -309,15 +333,12 @@ public class Comparer implements ActionInterface {
 		Logger.log("输出差异文件");
 
 
-		String comparePath = SystemConfig.formatDirRelativePath(compareDir.getAbsolutePath());
-		String outFilePath = SystemConfig.formatDirRelativePath(new File(compareDir, FILE_DIR_NAME).getAbsolutePath());
-		String nextVersionPath = SystemConfig.formatDirRelativePath(nextDir.getAbsolutePath());
-	
+		File outFileDir = new File(compareDir, FILE_DIR_NAME);
 	
 		// 输出差异文件。
 		for (String file : differentList) {
-			File sourceFile = new File(nextVersionPath + file);
-			File outFile = new File(outFilePath + file);
+			File sourceFile = new File(nextDir, file);
+			File outFile = new File(outFileDir, file);
 	
 			try {
 				if (sourceFile.isFile()) {
@@ -333,12 +354,13 @@ public class Comparer implements ActionInterface {
 
 		// 生成待删除文件列表。
 		StringBuffer content = new StringBuffer("# 一行一个文件或文件夹，目录使用 /、\\ 都没有关系。\n\n");
-	
+
 		for (String file : deleteList) {
 			content.append(file).append("\n");
 		}
 
-		FileUtil.save(comparePath + DELETE_LIST_FILENAME, content.toString());
+		File deleteListFile = new File(compareDir, DELETE_LIST_FILENAME);
+		FileUtil.save(deleteListFile, content.toString());
 		
 		
 		return true;
@@ -383,10 +405,17 @@ public class Comparer implements ActionInterface {
 			params.put("date", new SimpleDateFormat("yyyyMMdd").format(new Date()));
 
 			String filename = StringUtil.substitute(Common.getUpgradeFilename(), params);
-
+			File outFile = new File(Common.getOutDir(), filename);
+			
+			
+			// 清除已存在的文件。
+			if (outFile.exists()) {
+				outFile.delete();
+			}
+			
 
 			// 打包。
-			ZipUtil.compress(compareDir.getAbsolutePath(), Common.getOutDir().getAbsolutePath() + "\\" + filename);
+			ZipUtil.compress(compareDir, outFile);
 		} catch (IOException e) {
 			Logger.printStackTrace(e);
 			return false;
@@ -405,9 +434,9 @@ public class Comparer implements ActionInterface {
 		Logger.log("清理");
 
 
-		FileUtil.deleteDir(prevDir.getAbsolutePath());
-		FileUtil.deleteDir(nextDir.getAbsolutePath());
-		FileUtil.deleteDir(compareDir.getAbsolutePath());
+		FileUtil.deleteDir(prevDir);
+		FileUtil.deleteDir(nextDir);
+		FileUtil.deleteDir(compareDir);
 		
 		
 		return true;

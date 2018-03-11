@@ -76,13 +76,13 @@ public class Main {
 
 		// 排除文件类型。
 		List<String> packExcludeExts = new ArrayList<>();
-		for (String ext : StringUtil.unNull(properties.getProperty("excludeExts")).split(",")) {
+		for (String ext : StringUtil.unNull(properties.getProperty("excludedExts")).split(",")) {
 			ext = ext.trim().toLowerCase();
 			if (!ext.isEmpty()) {
 				packExcludeExts.add(ext);
 			}
 		}
-		Common.setExcludeExts(packExcludeExts);
+		Common.setExcludedExts(packExcludeExts);
 		
 		
 		// 设置执行动作。
@@ -108,28 +108,45 @@ public class Main {
 		
 
 		// 读取要排除不打包的文件或文件夹。
-		List<File> excludeFiles = new ArrayList<>();
+		List<File> excludedPackFiles = new ArrayList<>();
 		String[] projects = {"yiyuen", "yiyuen-admin"};
 		File[] roots = {Common.getYiyuenRoot(), Common.getYiyuenAdminRoot()};
 		
 		for (int i = 0, l = projects.length; i < l; i++) {
 			String project = projects[i];
 			File root = roots[i];
-			File excludeFilesFile = new File(path + "\\excludeFiles-" + project + ".txt");
+			File excludedFilesFile = new File(path, "excludedPackFiles-" + project + ".txt");
 
-			if (excludeFilesFile.exists()) {
-				for (String line : FileUtil.read(excludeFilesFile, StringUtil.UTF8).split("\n")) {
+			if (excludedFilesFile.exists()) {
+				for (String line : FileUtil.read(excludedFilesFile, StringUtil.UTF8).split("\n")) {
 					// 过滤前后空格。
 					line = line.trim();
 
 					// 过滤空行和注释行。
 					if (!line.isEmpty() && line.indexOf("#") == -1) {
-						excludeFiles.add(new File(root, line));
+						excludedPackFiles.add(new File(root, line));
 					}
 				}
 			}
 		}
-		Common.setExcludeFiles(excludeFiles);
+		Common.setExcludedPackFiles(excludedPackFiles);
+
+
+		// 读取要排除不比较的文件名文件夹。
+		List<String> excludedCompareFiles = new ArrayList<>();
+		File excludedCompareFile = new File(path, "excludedCompareFiles.txt");
+		if (excludedCompareFile.exists()) {
+			for (String line : FileUtil.read(excludedCompareFile, StringUtil.UTF8).split("\n")) {
+				// 过滤前后空格。
+				line = line.trim();
+
+				// 过滤空行和注释行。
+				if (!line.isEmpty() && line.indexOf("#") == -1) {
+					excludedCompareFiles.add(line);
+				}
+			}
+		}
+		Common.setExcludedCompareFiles(excludedCompareFiles);
 
 
 		// 获取下一个对应的版本号。
@@ -164,8 +181,9 @@ public class Main {
 		Logger.log("root-yiyuen-admin：" + Common.getYiyuenAdminRoot());
 		Logger.log("filename-full：" + Common.getFullFilename());
 		Logger.log("filename-upgrade：" + Common.getUpgradeFilename());
-		Logger.log("excludeExts：" + Common.getExcludeExts());
-		Logger.log("excludeFiles：" + Common.getExcludeFiles());
+		Logger.log("excludedExts：" + Common.getExcludedExts());
+		Logger.log("excludedPackFiles：" + Common.getExcludedPackFiles());
+		Logger.log("excludedCompareFiles：" + Common.getExcludedCompareFiles());
 		Logger.log("actions：" + Common.getActions());
 		Logger.log("ftp host：" + Common.getFtpHost());
 	}

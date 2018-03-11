@@ -434,7 +434,7 @@ public class Upgrade {
 	
 			localConfig.save();
 		} else {
-			Logger.log(localConfigFile + "文件不存在");
+			Logger.log(localConfigFile.getAbsoluteFile().toString() + "文件不存在");
 			
 			return false;
 		}
@@ -449,10 +449,14 @@ public class Upgrade {
 	
 			projectConfig.save();
 		} else {
-			Logger.log(projectConfigFile + "文件不存在");
+			Logger.log(projectConfigFile.getAbsoluteFile().toString() + "文件不存在");
 			
 			return false;
 		}
+
+
+		// 更新当前程序的版本号。
+		Common.setCurrentVersion(SystemConfig.parseVersion(version));
 		
 		
 		return true;
@@ -481,7 +485,7 @@ public class Upgrade {
 			
 			return true;
 		} else {
-			Logger.log("向中心服务器更新当前版本失败，" + sm.getDescription());
+			Logger.log("向中心服务器更新当前版本失败，url[" + url + "]，" + sm.getDescription());
 			
 			return false;
 		}

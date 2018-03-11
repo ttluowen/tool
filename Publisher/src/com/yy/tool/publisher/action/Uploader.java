@@ -4,12 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -64,7 +62,7 @@ public class Uploader implements ActionInterface {
 		
 		try {
 			// 输出打印面板。
-			ftpClient.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
+//			ftpClient.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 			
 
 			// 登录。

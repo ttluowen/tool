@@ -47,9 +47,11 @@ public class Common {
 	private static String upgradeFilenameReg;
 	
 	/** 排除的扩展名类型。 */
-	private static List<String> excludeExts;
-	/** 排除的文件或文件夹列表，包括所有工程。 */
-	private static List<File> excludeFiles;
+	private static List<String> excludedExts;
+	/** 排除不打包的文件名文件夹列表，包括所有工程。 */
+	private static List<File> excludedPackFiles;
+	/** 排除不比较的文件名文件夹列表。 */
+	private static List<String> excludedCompareFiles;
 
 	/** 发布执行的动作列表。*/
 	private static Actions actions;
@@ -161,20 +163,28 @@ public class Common {
 		Common.upgradeFilenameReg = upgradeFilenameReg;
 	}
 
-	public static List<String> getExcludeExts() {
-		return excludeExts;
+	public static List<String> getExcludedExts() {
+		return excludedExts;
 	}
 
-	public static void setExcludeExts(List<String> excludeExts) {
-		Common.excludeExts = excludeExts;
+	public static void setExcludedExts(List<String> excludedExts) {
+		Common.excludedExts = excludedExts;
 	}
 
-	public static List<File> getExcludeFiles() {
-		return excludeFiles;
+	public static List<File> getExcludedPackFiles() {
+		return excludedPackFiles;
 	}
 
-	public static void setExcludeFiles(List<File> excludeFiles) {
-		Common.excludeFiles = excludeFiles;
+	public static void setExcludedPackFiles(List<File> excludedPackFiles) {
+		Common.excludedPackFiles = excludedPackFiles;
+	}
+
+	public static List<String> getExcludedCompareFiles() {
+		return excludedCompareFiles;
+	}
+
+	public static void setExcludedCompareFiles(List<String> excludedCompareFiles) {
+		Common.excludedCompareFiles = excludedCompareFiles;
 	}
 
 	public static Actions getActions() {
