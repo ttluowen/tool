@@ -79,7 +79,7 @@ public class Main {
 
 
 		// 检查周期。
-		int checkPeriod = NumberUtil.parseInt("checkPeriod");
+		int checkPeriod = NumberUtil.parseInt(properties.get("checkPeriod"));
 		Common.setCheckPeriod(checkPeriod > 0 ? checkPeriod : 60);
 		
 
@@ -186,9 +186,6 @@ public class Main {
 	 * @throws IOException
 	 */
 	private boolean checkVersion() throws IOException {
-		
-		Common.setNewestVersion(0);
-		
 		
 		StatuscodeMap sm = StatuscodeMap.parse(HttpUtil.get(Common.DOMAIN + "api/base/version/query"));
 		
