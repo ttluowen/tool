@@ -140,9 +140,6 @@ public class Comparer implements ActionInterface {
 		// 取最后一个版本。
 		prevVersion = versions.get(versions.size() - 1);
 		
-		prevVersion = "1.0.6";
-		nextVersion = "1.0.11";
-		
 		
 		Logger.log("比较的上一版本是 v" + prevVersion);
 
