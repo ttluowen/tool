@@ -14,17 +14,20 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
  */
 public class SyncListener implements FileAlterationListener {
 
-	private FileSync monitor = null;
+	private FileSync monitor;
+	private int index;
 	
 	
 	/**
 	 * 构造函数。
 	 * 
 	 * @param monitor
+	 * @param index
 	 */
-	public SyncListener(FileSync monitor) {
+	public SyncListener(FileSync monitor, int index) {
 		
 		this.monitor = monitor;
+		this.index = index;
 	}
 
 	
@@ -37,37 +40,37 @@ public class SyncListener implements FileAlterationListener {
 	@Override
 	public void onDirectoryCreate(File directory) {
 		
-		monitor.create(directory);
+		monitor.create(directory, index);
 	}
 
 	@Override
 	public void onDirectoryChange(File directory) {
 		
-		monitor.modify(directory);
+		monitor.modify(directory, index);
 	}
 
 	@Override
 	public void onDirectoryDelete(File directory) {
 		
-		monitor.delete(directory);
+		monitor.delete(directory, index);
 	}
 
 	@Override
 	public void onFileCreate(File file) {
 	
-		monitor.create(file);
+		monitor.create(file, index);
 	}
 
 	@Override
 	public void onFileChange(File file) {
 		
-		monitor.modify(file);
+		monitor.modify(file, index);
 	}
 
 	@Override
 	public void onFileDelete(File file) {
 		
-		monitor.delete(file);
+		monitor.delete(file, index);
 	}
 
 	@Override

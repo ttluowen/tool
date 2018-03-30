@@ -10,6 +10,7 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 
 import com.rt.log.Logger;
+import com.rt.util.array.ArrayUtil;
 import com.rt.util.file.FileUtil;
 import com.rt.util.number.NumberUtil;
 import com.rt.util.proterty.PropertyUtil;
@@ -30,9 +31,9 @@ public class FileSync {
 	
 
 	/** 监听目录。 */
-	private String watchPath;
+	private String[] watchPath;
 	/** 同步目录。 */
-	private String syncPath;
+	private String[] syncPath;
 	
 	/** 差异监听周期，单位秒。 */
 	private int watchInterval = DEFAULT_WATCH_INTERVAL;
@@ -45,7 +46,7 @@ public class FileSync {
 	
 
 	/** 文件变化监视器。 */
-	private FileAlterationMonitor monitor = null;
+	private FileAlterationMonitor[] monitor;
 
 	
 	/**
@@ -54,8 +55,10 @@ public class FileSync {
 	 * @throws Exception
 	 */
 	public void stop() throws Exception {
-		
-		monitor.stop();
+
+		for (FileAlterationMonitor item : monitor) {
+			item.stop();
+		}
 	}
 
 	
@@ -65,8 +68,10 @@ public class FileSync {
 	 * @throws Exception
 	 */
 	public void start() throws Exception {
-		
-		monitor.start();
+
+		for (FileAlterationMonitor item : monitor) {
+			item.start();
+		}
 	}
 
 	
@@ -89,23 +94,30 @@ public class FileSync {
 		
 		Map<String, String> properties = PropertyUtil.readAsMap(path + "config.properties");
 		// 监视目录。
-		watchPath = SystemConfig.appendLastFileSeparator(properties.get("watchPath"));
+		watchPath = properties.get("watchPath").split(",");
 		// 同步目录。
-		syncPath = SystemConfig.appendLastFileSeparator(properties.get("syncPath"));
+		syncPath = properties.get("syncPath").split(",");
 	
 		
 		// 检查相关目录，如果不存在就立即创建。
-		File watchPathFile = new File(watchPath);
-		if (!watchPathFile.exists()) {
-			watchPathFile.mkdirs();
+		for (int i = 0; i < watchPath.length; i++) {
+			String item = watchPath[i];
+			File watchPathFile = new File(item);
+			if (!watchPathFile.exists()) {
+				watchPathFile.mkdirs();
+			}
+			watchPath[i] = SystemConfig.appendLastFileSeparator(watchPathFile.getAbsolutePath());
 		}
-		watchPath = watchPathFile.getAbsolutePath();
 		
-		File asyncPathFile = new File(syncPath);
-		if (!asyncPathFile.exists()) {
-			asyncPathFile.mkdirs();
+		for (int i = 0; i < syncPath.length; i++) {
+			String item = syncPath[i];
+			File asyncPathFile = new File(item);
+			if (!asyncPathFile.exists()) {
+				asyncPathFile.mkdirs();
+			}
+			syncPath[i] = SystemConfig.appendLastFileSeparator(asyncPathFile.getAbsolutePath());
 		}
-		syncPath = asyncPathFile.getAbsolutePath();
+		
 		
 		
 		// 差异监听周期。
@@ -123,32 +135,39 @@ public class FileSync {
 				}
 			}
 		}
-	
-		
+
+
 		// 排除的文件或文件夹。
 		File excludeFilesFile = new File(path + "excludeFiles.txt");
 		if (excludeFilesFile.exists()) {
 			for (String line : FileUtil.read(excludeFilesFile).split("\n")) {
 				// 过滤前后空格。
 				line = line.trim();
-	
+
 				// 过滤空行和注释行。
 				if (!line.isEmpty() && line.indexOf("#") == -1) {
-					excludeFiles.add(new File(watchPath + "\\" + line).getAbsolutePath());
+					for (String item : watchPath) {
+						excludeFiles.add(new File(item + "\\" + line).getAbsolutePath());
+					}
 				}
 			}
 		}
 
 
 		// 监视器初始化。
-		monitor = new FileAlterationMonitor(watchInterval * 1000);
-		FileAlterationObserver observer = new FileAlterationObserver(new File(watchPath));
-		monitor.addObserver(observer);
-		observer.addListener(new SyncListener(this));
+		int size = watchPath.length;
+		monitor = new FileAlterationMonitor[size];
+		
+		for (int i = 0; i < size; i++) {
+			monitor[i] = new FileAlterationMonitor(watchInterval * 1000);
+			FileAlterationObserver observer = new FileAlterationObserver(new File(watchPath[i]));
+			monitor[i].addObserver(observer);
+			observer.addListener(new SyncListener(this, i));
+		}
 
 
-		Logger.log("Watch path: " + watchPath);
-		Logger.log("Sync path: " + syncPath);
+		Logger.log("Watch path: " + ArrayUtil.join(watchPath));
+		Logger.log("Sync path: " + ArrayUtil.join(syncPath));
 		Logger.log("Exclude exts: " + excludeExts);
 		Logger.log("Exclude files: " + excludeFiles);
 		Logger.log("Inited");
@@ -204,11 +223,12 @@ public class FileSync {
 	 * 将监视的文件转换成同步路径文件。
 	 * 
 	 * @param watchFile
+	 * @param index
 	 * @return
 	 */
-	private File toSyncFile(File watchFile) {
+	private File toSyncFile(File watchFile, int index) {
 		
-		return new File(watchFile.getAbsolutePath().replace(watchPath, syncPath));
+		return new File(watchFile.getAbsolutePath().replace(watchPath[index], syncPath[index]));
 	}
 
 
@@ -217,19 +237,19 @@ public class FileSync {
 	 * 新建操作。
 	 * 
 	 * @param file
-	 * @param path
+	 * @param index
 	 */
-	public void create(File file) {
+	public void create(File file, int index) {
 		
 		try {
 			if (excluded(file)) {
 				return;
 			}
-			
 
-			File syncFile = toSyncFile(file);
-			
-			
+
+			File syncFile = toSyncFile(file, index);
+
+
 			if (file.isDirectory()) {
 				// 新建文件夹。
 				if (!syncFile.exists()) {
@@ -250,12 +270,12 @@ public class FileSync {
 	 * 修改操作。
 	 * 
 	 * @param file
-	 * @param path
+	 * @param index
 	 */
-	public void modify(File file) {
+	public void modify(File file, int index) {
 		
 		// 同新增操作。
-		create(file);
+		create(file, index);
 	}
 
 
@@ -264,9 +284,9 @@ public class FileSync {
 	 * 删除操作。
 	 * 
 	 * @param file
-	 * @param path
+	 * @param index
 	 */
-	public void delete(File file) {
+	public void delete(File file, int index) {
 		
 		try {
 			if (excluded(file)) {
@@ -274,7 +294,7 @@ public class FileSync {
 			}
 			
 
-			File syncFile = toSyncFile(file);
+			File syncFile = toSyncFile(file, index);
 
 
 			if (file.isDirectory()) {
