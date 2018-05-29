@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rt.encrypt.MD5;
-import com.rt.log.Logger;
-import com.rt.util.file.FileUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.util.zip.ZipUtil;
+import com.yy.encrypt.MD5;
+import com.yy.log.Logger;
 import com.yy.tool.publisher.Common;
+import com.yy.util.file.FileUtil;
+import com.yy.util.string.StringUtil;
+import com.yy.util.zip.ZipUtil;
 
 /**
  * 与上一版本的增量文件比较。

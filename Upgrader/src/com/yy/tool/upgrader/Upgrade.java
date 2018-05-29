@@ -10,15 +10,15 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
-import com.rt.log.Logger;
-import com.rt.statuscode.Statuscode;
-import com.rt.statuscode.StatuscodeMap;
-import com.rt.util.date.DateUtil;
-import com.rt.util.file.FileUtil;
-import com.rt.util.http.HttpUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.util.zip.ZipUtil;
-import com.rt.web.config.SystemConfig;
+import com.yy.log.Logger;
+import com.yy.statuscode.Statuscode;
+import com.yy.statuscode.StatuscodeMap;
+import com.yy.util.date.DateUtil;
+import com.yy.util.file.FileUtil;
+import com.yy.util.http.HttpUtil;
+import com.yy.util.string.StringUtil;
+import com.yy.util.zip.ZipUtil;
+import com.yy.web.config.SystemConfig;
 
 
 /**

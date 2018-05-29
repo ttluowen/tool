@@ -14,9 +14,9 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.commons.net.ftp.FTPReply;
 
-import com.rt.log.Logger;
-import com.rt.util.string.StringUtil;
+import com.yy.log.Logger;
 import com.yy.tool.publisher.Common;
+import com.yy.util.string.StringUtil;
 
 /**
  * 上传版本文件操作。

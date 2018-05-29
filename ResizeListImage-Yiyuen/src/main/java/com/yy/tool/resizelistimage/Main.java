@@ -9,13 +9,13 @@ import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
-import com.rt.log.Logger;
-import com.rt.util.number.NumberUtil;
-import com.rt.util.proterty.PropertyUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.web.config.SystemConfig;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
+import com.yy.log.Logger;
+import com.yy.util.number.NumberUtil;
+import com.yy.util.proterty.PropertyUtil;
+import com.yy.util.string.StringUtil;
+import com.yy.web.config.SystemConfig;
 
 
 /**

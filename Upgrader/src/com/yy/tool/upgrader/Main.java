@@ -18,15 +18,15 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import com.rt.log.Logger;
-import com.rt.statuscode.Statuscode;
-import com.rt.statuscode.StatuscodeMap;
-import com.rt.util.file.FileUtil;
-import com.rt.util.http.HttpUtil;
-import com.rt.util.number.NumberUtil;
-import com.rt.util.proterty.PropertyUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.web.config.SystemConfig;
+import com.yy.log.Logger;
+import com.yy.statuscode.Statuscode;
+import com.yy.statuscode.StatuscodeMap;
+import com.yy.util.file.FileUtil;
+import com.yy.util.http.HttpUtil;
+import com.yy.util.number.NumberUtil;
+import com.yy.util.proterty.PropertyUtil;
+import com.yy.util.string.StringUtil;
+import com.yy.web.config.SystemConfig;
 
 
 /**

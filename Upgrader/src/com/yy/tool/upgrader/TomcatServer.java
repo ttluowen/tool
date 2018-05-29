@@ -1,8 +1,10 @@
 package com.yy.tool.upgrader;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,9 +13,9 @@ import org.hyperic.sigar.ProcExe;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
-import com.rt.log.Logger;
-import com.rt.util.number.NumberUtil;
-import com.rt.util.string.StringUtil;
+import com.yy.log.Logger;
+import com.yy.util.number.NumberUtil;
+import com.yy.util.string.StringUtil;
 
 
 /**
@@ -38,6 +40,10 @@ public class TomcatServer {
 	
 	/** 停止超时时间，如果超过该时间仍未关闭 Tomcat 服务，将会强制把进程结束。 */
 	private static final int SHUTDOWN_TIMEOUT = 10;
+	
+	
+	/** Tomcat 默认关闭接口端口。 */
+	private static int shutdownPort = 8005;
 	
 	
 	// 日志记录列表。
@@ -201,13 +207,30 @@ public class TomcatServer {
 			long time = new Date().getTime();
 
 			while (true) {
+				// 使用端口号验证。
+				Socket socket = null;
 				try {
-					sigar.getProcState(tomcatPid);
-				} catch (SigarException e) {
-					// 如果获取进行的状态失败，可能是该进行已不存在，所以可以退出。
+					socket = new Socket("127.0.0.1", shutdownPort);
+				} catch (Exception e) {
 					break;
+				} finally {
+					if (socket != null && !socket.isClosed()) {
+						try {
+							socket.close();
+						} catch (IOException e) {
+						}
+					}
 				}
+				
+				
+//				try {
+//					sigar.getProcState(tomcatPid);
+//				} catch (SigarException e) {
+//					// 如果获取进行的状态失败，可能是该进行已不存在，所以可以退出。
+//					break;
+//				}
 
+				
 				// 检测是否关闭超时，超过限定时间仍不能关闭的，将强制关闭进程。
 				if ((new Date().getTime() - time) / 1000 > SHUTDOWN_TIMEOUT) {
 					log = "关闭进程[" + tomcatPid + "]超时，将强制关闭进程";
@@ -324,5 +347,16 @@ public class TomcatServer {
 	public static List<String> getLogs() {
 		
 		return logs;
+	}
+	
+	
+	/**
+	 * 设置 Tomcat 关闭接口端口。
+	 * 
+	 * @param port
+	 */
+	public static void setShutdownPort(int port) {
+		
+		shutdownPort = port;
 	}
 }

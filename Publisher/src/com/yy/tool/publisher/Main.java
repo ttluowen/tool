@@ -6,18 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.rt.log.Logger;
-import com.rt.statuscode.StatuscodeMap;
-import com.rt.util.file.FileUtil;
-import com.rt.util.http.HttpUtil;
-import com.rt.util.number.NumberUtil;
-import com.rt.util.proterty.PropertyUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.web.config.SystemConfig;
+import com.yy.log.Logger;
+import com.yy.statuscode.StatuscodeMap;
 import com.yy.tool.publisher.action.Comparer;
 import com.yy.tool.publisher.action.Packer;
 import com.yy.tool.publisher.action.Publisher;
 import com.yy.tool.publisher.action.Uploader;
+import com.yy.util.file.FileUtil;
+import com.yy.util.http.HttpUtil;
+import com.yy.util.number.NumberUtil;
+import com.yy.util.proterty.PropertyUtil;
+import com.yy.util.string.StringUtil;
+import com.yy.web.config.SystemConfig;
 
 
 /**

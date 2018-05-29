@@ -1,10 +1,10 @@
 package com.yy.tool.publisher.action;
 
-import com.rt.log.Logger;
-import com.rt.statuscode.Statuscode;
-import com.rt.statuscode.StatuscodeMap;
-import com.rt.util.http.HttpUtil;
+import com.yy.log.Logger;
+import com.yy.statuscode.Statuscode;
+import com.yy.statuscode.StatuscodeMap;
 import com.yy.tool.publisher.Common;
+import com.yy.util.http.HttpUtil;
 
 /**
  * 通知中心服务器发布当前版本。

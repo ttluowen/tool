@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rt.web.config.SystemConfig;
+import com.yy.web.config.SystemConfig;
 
 /**
  * 配置集中管理。
