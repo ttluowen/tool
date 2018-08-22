@@ -1,3 +1,0 @@
-﻿# 排除不比较的文件或文件目录。
-
-WEB-INF/configs.properties

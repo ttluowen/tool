@@ -5,9 +5,9 @@ package com.yiyuen.screenshot.render;
 
 import java.io.File;
 
-import com.rt.log.Logger;
-import com.rt.web.config.SystemConfig;
 import com.yiyuen.screenshot.Scrender;
+import com.yy.log.Logger;
+import com.yy.web.config.SystemConfig;
 
 /**
  * 

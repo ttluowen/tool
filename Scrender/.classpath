@@ -4,6 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/jimi.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/swt.jar"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Java-Lib"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java-core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
