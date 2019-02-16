@@ -12,9 +12,9 @@ import javax.imageio.ImageIO;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.yy.log.Logger;
-import com.yy.util.number.NumberUtil;
-import com.yy.util.proterty.PropertyUtil;
-import com.yy.util.string.StringUtil;
+import com.yy.util.NumberUtil;
+import com.yy.util.PropertyUtil;
+import com.yy.util.StringUtil;
 import com.yy.web.config.SystemConfig;
 
 
