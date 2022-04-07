@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="jimi">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/scrender/lib/jimi.jar!/" />
+      <root url="jar://$PROJECT_DIR$/scrender/lib/swt.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
